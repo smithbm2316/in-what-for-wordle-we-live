@@ -10,4 +10,4 @@ jobs:
     - uses: denoland/setup-deno@v1
       with:
         deno-version: v1.x
-    - run: deno run -c deno.jsonc scripts/scrapeSoFifa.ts
+    - run: deno run --unstable --allow-write --allow-net=sofifa.com --allow-env --allow-ffi https://raw.githubusercontent.com/smithbm2316/in-what-for-wordle-we-live/main/scripts/scrapeSoFifa.ts
