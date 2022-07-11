@@ -4,6 +4,7 @@ import initSqlJs from '@jlongster/sql.js';
 import { SQLiteFS } from 'absurd-sql';
 // @ts-ignore
 import IndexedDBBackend from 'absurd-sql/dist/indexeddb-backend';
+import sqlWASMUrl from '@jlongster/sql.js/dist/sql-wasm.wasm?url';
 import { clientsClaim } from 'workbox-core';
 import { cleanupOutdatedCaches, precacheAndRoute } from 'workbox-precaching';
 
@@ -14,7 +15,7 @@ self.skipWaiting();
 clientsClaim();
 
 async function init() {
-  const SQL = await initSqlJs({ locateFile: (file: any) => file });
+  const SQL = await initSqlJs({ locateFile: () => sqlWASMUrl });
   const sqlFS = new SQLiteFS(SQL.FS, new IndexedDBBackend());
   SQL.register_for_idb(sqlFS);
 
