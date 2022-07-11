@@ -1140,6 +1140,11 @@
     magic-string "^0.25.0"
     string.prototype.matchall "^4.0.6"
 
+"@types/emscripten@*":
+  version "1.39.6"
+  resolved "https://registry.yarnpkg.com/@types/emscripten/-/emscripten-1.39.6.tgz#698b90fe60d44acf93c31064218fbea93fbfd85a"
+  integrity sha512-H90aoynNhhkQP6DRweEjJp5vfUVdIj7tdPLsu7pq89vODD/lcugKfZOsfgwpvM6XUewEp2N5dCg1Uf3Qe55Dcg==
+
 "@types/estree@0.0.39":
   version "0.0.39"
   resolved "https://registry.yarnpkg.com/@types/estree/-/estree-0.0.39.tgz#e177e699ee1b8c22d23174caaa7422644389509f"
@@ -1155,6 +1160,14 @@
   resolved "https://registry.yarnpkg.com/@types/resolve/-/resolve-1.17.1.tgz#3afd6ad8967c77e4376c598a82ddd58f46ec45d6"
   integrity sha512-yy7HuzQhj0dhGpD8RLXSZWEkLsV9ibvxvi6EiJ3bkqLAO1RGo0WbkWQiwpRlSFymTJRz0d3k5LM3kkx8ArDbLw==
   dependencies:
+    "@types/node" "*"
+
+"@types/sql.js@^1.4.3":
+  version "1.4.3"
+  resolved "https://registry.yarnpkg.com/@types/sql.js/-/sql.js-1.4.3.tgz#190393fd9aff683b880b9fbe3b04b4f6a84c5fbd"
+  integrity sha512-3bz1LJIiJtKMEL8tYf7c9Nrb1lYcFeWQkE8vhWvobE29ZzizW79DtoTjqx1bR82DS2Ch2K30nOwNhuLclZ1vYg==
+  dependencies:
+    "@types/emscripten" "*"
     "@types/node" "*"
 
 "@types/trusted-types@^2.0.2":

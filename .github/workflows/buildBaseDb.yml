@@ -1,0 +1,13 @@
+name: Refresh base DB
+on:
+  schedule:
+    - cron: '0 9 * * *'
+
+jobs:
+  scrape-so-fifa:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: denoland/setup-deno@v1
+      with:
+        deno-version: v1.x
+    - run: deno run -c deno.jsonc scripts/scrapeSoFifa.ts

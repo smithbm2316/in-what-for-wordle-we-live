@@ -9,6 +9,12 @@ const people = [
   'Katelyn Rohan',
 ];
 
+function sendDataToSW(data: any) {
+  if (window.navigator.serviceWorker.controller) {
+    window.navigator.serviceWorker.controller.postMessage(data);
+  }
+}
+
 export function App() {
   const [selectedPerson, setSelectedPerson] = useState(people[0]);
   const [query, setQuery] = useState('');
@@ -25,7 +31,10 @@ export function App() {
       <Combobox
         as='div'
         value={selectedPerson}
-        onChange={setSelectedPerson}
+        onChange={(person) => {
+          setSelectedPerson(person);
+          sendDataToSW({ person });
+        }}
         className='relative'
       >
         <Combobox.Input

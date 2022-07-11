@@ -16,7 +16,10 @@
     "noEmit": true,
     "jsx": "preserve",
     "jsxFactory": "h",
-    "jsxFragmentFactory": "Fragment"
+    "jsxFragmentFactory": "Fragment",
+    "paths": {
+      "sql.js": "./node_modules/@jlongster/sql.js"
+    }
   },
   "include": ["src"],
   "references": [{ "path": "./tsconfig.node.json" }]

@@ -11,6 +11,7 @@ export default defineConfig({
       srcDir: 'src',
       filename: 'sw.ts',
       registerType: 'autoUpdate',
+      selfDestroying: false,
       devOptions: {
         enabled: true,
         type: 'module',
