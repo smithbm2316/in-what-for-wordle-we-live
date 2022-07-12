@@ -1,4 +1,6 @@
 import { cheerio } from 'https://deno.land/x/cheerio@1.0.6/mod.ts';
+import { DB } from 'https://deno.land/x/sqlite@v3.4.0/mod.ts';
+
 type Team = {
   imgUrl: string | null;
   name: string | null;
@@ -310,3 +312,193 @@ plData.teams = Object.values(allTeams);
 const encoder = new TextEncoder();
 const jsonData = encoder.encode(JSON.stringify(plData));
 await Deno.writeFile('./public/plData.json', jsonData, { create: true });
+
+// Open a new db
+console.log('Opening database');
+const db = new DB('./public/players.db');
+console.log('Complete');
+
+// update default settings of the SQLite database
+console.log('Updating PRAGMA settings for db');
+db.execute('PRAGMA busy_timeout = 5000');
+db.execute('PRAGMA journal_mode = WAL');
+db.execute('PRAGMA foreign_keys = ON');
+console.log('Complete');
+
+// create database schema
+// Guesses table
+console.log('Creating schema in db');
+db.execute(
+  `create table if not exists guesses (
+    id integer not null,
+    number integer not null,
+    gameId integer not null,
+    foreign key (gameId) references games (id),
+    primary key(id)
+  ) strict;`,
+);
+// Games table
+db.execute(
+  `create table if not exists games (
+    id integer not null,
+    date text not null,
+    state text,
+    primary key(id)
+  ) strict;`,
+);
+// Positions table
+db.execute(
+  `create table if not exists positions (
+    position text unique,
+    primary key(position)
+  ) strict;`,
+);
+// Teams table
+db.execute(
+  `create table if not exists teams (
+    name text not null unique,
+    imgUrl text,
+    primary key(name)
+  ) strict;`,
+);
+// Players table
+db.execute(
+  `create table if not exists players (
+    id integer not null,
+    name text not null,
+    imgUrl text not null,
+    age integer not null,
+    dob text not null,
+    height integer not null,
+    weight integer not null,
+    fifaRating integer not null,
+    fifaPotential integer not null,
+    jerseyNumber integer not null,
+    primary key(id)
+  ) strict;`,
+);
+// PlayersOfTheDay table
+db.execute(
+  `create table if not exists playersOfTheDay (
+    id integer not null,
+    date text not null,
+    playerId integer not null,
+    foreign key (playerId) references players (id),
+    primary key(id)
+  ) strict;`,
+);
+// PlayersHaveTeams table (join table)
+db.execute(
+  `create table if not exists PlayersHaveTeams (
+    playerId integer not null,
+    team text not null,
+    primary key(playerId, team)
+  ) strict;`,
+);
+// PlayersHavePositions table (join table)
+db.execute(
+  `create table if not exists PlayersHavePositions (
+    playerId integer not null,
+    position text not null,
+    primary key(playerId, position)
+  ) strict;`,
+);
+console.log('Complete');
+
+// Create all the Position entries from our scraped data
+console.log('Seeding positions table');
+const addPosition = db.prepareQuery<
+  unknown[],
+  { [key: string]: unknown },
+  { position: string }
+>('insert into positions (position) values (:position)');
+for (const position of plData.positions) {
+  addPosition.execute({
+    position,
+  });
+}
+addPosition.finalize();
+console.log('Complete');
+
+console.log('Seeding teams table');
+// Create all of the Team entries from our scraped data
+const addTeam = db.prepareQuery<unknown[], { [key: string]: unknown }, Team>(
+  'insert into teams (name, imgUrl) values (:name, :imgUrl)',
+);
+for (const team of plData.teams) {
+  addTeam.execute({
+    name: team.name,
+    imgUrl: team.imgUrl,
+  });
+}
+addTeam.finalize();
+console.log('Complete');
+
+console.log('Seeding players table');
+// Create all of the Team entries from our scraped data
+type PlayerData = Omit<Player, 'positions' | 'teams' | 'currentTeam'>;
+const addPlayer = db.prepareQuery<
+  unknown[],
+  { [key: string]: unknown },
+  PlayerData
+>(
+  `insert into players (
+    name, imgUrl, age, dob, height, weight, fifaRating, fifaPotential, jerseyNumber
+  ) values (
+    :name, :imgUrl, :age, :dob, :height, :weight, :fifaRating, :fifaPotential, :jerseyNumber
+  )`,
+);
+const addPlayersHaveTeams = db.prepareQuery<
+  unknown[],
+  { [key: string]: unknown },
+  { playerId: number; team: string }
+>(
+  `insert into PlayersHaveTeams (
+    playerId, team
+  ) values (
+    :playerId, :team
+  )`,
+);
+const addPlayersHavePositions = db.prepareQuery<
+  unknown[],
+  { [key: string]: unknown },
+  { playerId: number; position: string }
+>(
+  `insert into PlayersHavePositions (
+    playerId, position
+  ) values (
+    :playerId, :position
+  )`,
+);
+
+for (const player of plData.players) {
+  const { teams, positions, currentTeam: _, ...pd } = player;
+  const playerData: PlayerData = pd;
+  addPlayer.execute(playerData);
+  const newPlayerId = db.lastInsertRowId;
+
+  teams.forEach((team) =>
+    addPlayersHaveTeams.execute({
+      playerId: newPlayerId,
+      team: team.name!,
+    }),
+  );
+
+  positions.forEach((position) =>
+    addPlayersHavePositions.execute({
+      playerId: newPlayerId,
+      position,
+    }),
+  );
+}
+addPlayer.finalize();
+addPlayersHaveTeams.finalize();
+addPlayersHavePositions.finalize();
+console.log('Complete');
+
+// finish and exit
+console.log(`Database has been seeded. 🌱`);
+
+// Close connection
+db.close();
+console.log('Script exiting successfully');

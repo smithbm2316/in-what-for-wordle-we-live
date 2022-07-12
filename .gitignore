@@ -12,6 +12,10 @@ dist
 dist-ssr
 dev-dist
 *.local
+public/*.db
+public/plData.json
+.env
+.env.local
 
 # Editor directories and files
 .vscode/*

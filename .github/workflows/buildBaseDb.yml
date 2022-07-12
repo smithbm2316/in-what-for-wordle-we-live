@@ -7,7 +7,8 @@ jobs:
   scrape-so-fifa:
     runs-on: ubuntu-latest
     steps:
+    - uses: actions/checkout@v3
     - uses: denoland/setup-deno@v1
       with:
         deno-version: v1.x
-    - run: deno run --unstable --allow-write --allow-net=sofifa.com --allow-env --allow-ffi https://raw.githubusercontent.com/smithbm2316/in-what-for-wordle-we-live/main/scripts/scrapeSoFifa.ts
+    - run: deno run --unstable --allow-write --allow-read --allow-net=sofifa.com --allow-env --allow-ffi ./scripts/scrapeSoFifa.ts

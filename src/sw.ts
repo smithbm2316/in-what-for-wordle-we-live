@@ -31,6 +31,13 @@ initSqlJs({ locateFile: () => sqlWASMUrl })
     SQL.FS.mkdir('/sql');
     SQL.FS.mount(sqlFS, {}, '/sql');
 
+    // TODO: Host a base db that I generate from a Github Action daily on Github Pages, so that I
+    // can just fetch that instead of sending down the JSON and running all setup code
+    // loading a remote db: https://sql.js.org/#/?id=loading-a-database-from-a-server
+    // hosting the base db on gh pages: https://phiresky.github.io/blog/2021/hosting-sqlite-databases-on-github-pages/
+    // saving the remote db locally: https://github.com/jlongster/absurd-sql/discussions/48
+    // const data = await fetch("gh-pages-link-here").then(res => res.arrayBuffer());
+    // db = new SQL.Database(new Uint8Array(data), { filename: true });
     db = new SQL.Database('/sql/db.sqlite', { filename: true });
     db.exec(`
       PRAGMA page_size=8192;
@@ -61,16 +68,10 @@ function runTestQueries() {
   stmt.free();
 }
 
-// TODO: could I host the base sqlite DB on Github Pages after running a daily github action to
-// update the base DB? That way I could just send down the sqlite file to the client and load that
-// into the device...🤔
-// YES this might be a good idea: https://sql.js.org/#/?id=loading-a-database-from-a-server
-// hosting a sqlite db on github pages: https://phiresky.github.io/blog/2021/hosting-sqlite-databases-on-github-pages/
-
 // Handle messages from the main thread/app
-self.addEventListener('message', (e) => {
-  // console.log('Service worker received data', e?.data);
-  if (e?.data?.person) {
+self.addEventListener('message', (e: ExtendableMessageEvent) => {
+  const { data } = e.data;
+  if ('person' in data) {
     runTestQueries();
   }
 });
